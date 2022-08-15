@@ -6,6 +6,14 @@
  * All rights reserved.
  */
 
+/*
+let User = "";
+chrome.runtime.onMessage.addListener((msg) => {
+  User = msg.username;
+  alert(User);
+});
+*/
+
 var chromePage = "";
 var chromeInIncognito = false;
 if (chrome.extension) {
@@ -262,15 +270,14 @@ setEventListener: function () {
     console.log('[LOOPER FOR YOUTUBE]', 'fail to find dom to observe player size change.');
   }
   
-  //window.removeEventListener('resize', ytl.windowResizedAction, false);
-  //window.addEventListener('resize', ytl.windowResizedAction, false); 
-  /* 
-  const progress = document.getElementById("loop-slider-padding-0");
-
-  setInterval(function () {
-    progress.style.marginLeft = (Math.round((ytl.player.getCurrentTime() / ytl.player.getDuration()) * 100)).toString() + "%";
-  }, 100);
-  */
+  let currentTime = ytl.player.getCurrentTime();
+  let videoDuration = ytl.player.getDuration();
+  const videoInfo = {
+    'currentTime': currentTime,
+    'duration': videoDuration
+  }
+  ytl.storage['test'] = 'true';
+  ytl.storage[user.toString()] = JSON.stringify(videoInfo);
 },
 
 /*
@@ -491,18 +498,22 @@ getVariable: function (c, i) {
     case 'player':
       if (typeof player_reference === 'object' && typeof player_reference.getDuration == 'function') {
         if (ytl.isDebug) ytl.log('Player Object', 'player_reference from onYouTubePlayerReady');
+        //alert("0");
         return player_reference;
       } else if (typeof window.yt.config_.PLAYER_REFERENCE === 'object') {
         if (ytl.isDebug) ytl.log('Player Object', 'yt.config_.PLAYER_REFERENCE');
+        //alert("1");
         return window.yt.config_.PLAYER_REFERENCE;
       } else if (document.getElementById('movie_player') != null) {
         if (ytl.getReadyTimes > 10) {
           if (ytl.isDebug) ytl.log('Player Object', 'movie_player');
+          //alert("movie_player");
           return document.getElementById('movie_player');
         }
         return;
       } else if (typeof document.getElementsByClassName('html5-video-player')[0] === 'object') {
         if (ytl.isDebug) ytl.log('Player Object', 'html5-video-player');
+        //alert("3");
         return document.getElementsByClassName('html5-video-player')[0];
       }
       return;
@@ -1932,7 +1943,9 @@ getReady: function () {
       ytl.player != ytl.getVariable('player')
     )
       ytl.player = ytl.getVariable('player');
-  
+
+    //
+
     if (ytl.button==null || document.getElementById('loop-button')==null) ytl.setButton(); else if (ytl.button) ytl.button.disabled = true;
     if (ytl.panel==null || document.getElementById('action-panel-loop')==null) ytl.setPanel();
   
@@ -2339,4 +2352,11 @@ window.addEventListener('message', function (e) {
   if (e.data.type == 'requestMessage') {
     getMessageFromChromeSync();
   }
+  /*
+  chrome.runtime.sendMessage({
+    action: "videoInfo",
+    info: this.localStorage["yt-auto-loop"]
+  }
+);
+*/
 }, false);

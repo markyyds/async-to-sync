@@ -1,0 +1,42 @@
+{
+	"version": "5.17.4",
+	"content_scripts": [
+	  {
+		"js": [
+		  "contentscript.js"
+		],
+		"css": [
+		  "inject_style.css"
+		],
+		"matches": [
+		  "*://*.youtube.com/*",
+		  "*://youtube.com/*"
+		],
+		"run_at": "document_start"
+	  }
+	],
+	"background": {
+		"page": 
+		  ["background.html"],
+		"persistent": false
+	},
+	"content_security_policy": "default-src 'self'; script-src 'self' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com; img-src data: chrome-extension: http://*.gstatic.com https://*.gstatic.com https://*.facebook.com https://*.twitter.com; style-src 'self' 'unsafe-inline'; object-src 'self'",
+	"web_accessible_resources": [
+		"_locales/*", "options.html"
+	],
+	"browser_action": {
+		"default_popup": "popup.html"
+	},
+	"default_locale": "en",
+	"permissions": [
+	  "storage", "activeTab", "tabs"
+	],
+	"manifest_version": 2,
+	"update_url": "http://clients2.google.com/service/update2/crx",
+	"icons": {
+	  "128": "icon.png"
+	},
+	"name": "__MSG_extension_name__",
+	"description": "__MSG_extension_description__",
+	"homepage_url": "https://www.alvinhkh.com/looperforyoutube"
+}
