@@ -1,6 +1,10 @@
 let User = "";
-let Duration = "";
 let Info = "";
+let VideoID = "";
+let CurrentTime = "";
+let Duration = "";
+let marginpercent = "";
+let currentVideoID = "";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDG-k2DcQweinOlVmwmfPVJz080YgmGVeI",
@@ -20,31 +24,54 @@ console.log(firebase);
 //const app = firebase.initializeApp(firebaseConfig);
 const db = app.database();
 
-chrome.runtime.onMessage.addListener((msg) => {
+
+chrome.runtime.onMessage.addListener((msg, sendResponse) => {
   if(msg.action == "userinfo"){
     User = msg.name;
     console.log(User);
-    //localStorage[User] = "";
   }
-  /*
-  if(msg.action == "videoInfo"){
-    Info = msg.info;
+});
+
+/*
+db.ref('videoID/' + VideoID + "/" + User).orderByKey().on("child_added", function(data){
+  console.log("data key" + data.val());
+  sendResponse({farewell: data.key});
+})
+*/
+
+chrome.runtime.onMessageExternal.addListener(
+  function(request, sender, sendResponse) {
+    if (request.command == "request a list of user names"){
+      db.ref('videoID/' + VideoID + '/').on("child_changed", function(data){
+        var newUser = data.val();
+        //console.log("data key: " + data.key);
+        //console.log("marginPercent: " + newUser.marginPercent);
+        sendResponse({farewell: data.key + "|" + newUser.marginPercent});
+      })
+    }  
+    if (request.command == "request margin"){
+      db.ref('videoID/' + VideoID + '/').on("child_changed", function(data){
+        var newUser = data.val();
+        console.log("marginPercent from request margin: " + newUser.marginPercent);
+        sendResponse({message: data.key + "|" + newUser.marginPercent});
+      })
+    }  
   }
-  */
-  db.ref('user/' + User).set({
-    username: User,
-    //currentTime: Info
-    //videoDuration: 
-  });
-  /*
-  if(msg.action == "videoDuration"){
-    Duration = msg.duration;
-    console.log(Duration);
+);
+
+chrome.runtime.onMessageExternal.addListener((request, sendResponse) => {
+  if(request.marginInfo){
+    console.log(request.marginInfo);
+    marginpercent = request.marginInfo;
   }
-  db.ref('user/' + User).set({
-    videoDuration: Duration,
-    username: User
-  });
-  */
+  if(request.videoID){
+    //console.log(request.videoID);
+    VideoID = request.videoID;
+  }
+  if(User != ""){
+    db.ref('videoID/' + VideoID + '/' + User).set({
+      marginPercent: marginpercent
+    });
+  }
 });
 

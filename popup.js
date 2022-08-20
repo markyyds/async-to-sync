@@ -13,31 +13,11 @@ if (!user) {
   }
 }
 
-/*
-const remove = document.getElementById("changeColor");
-remove.onclick = function(){
-  cookie.remove('user', user);
-};
-*/
-
 const welcomeMessage = document.getElementById("welcome");
 welcomeMessage.innerText = "Hello " + user;
-
-// Import the functions you need from the SDKs you nee
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 
 chrome.runtime.sendMessage({
   action: "userinfo",
   name: user
 }
 );
-
-/*
-chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-  chrome.tabs.sendMessage(tabs[0].id, {username: user});
-});
-*/

@@ -112,9 +112,12 @@ initialiseVariables: function() {
   ytl.panel = null;
   ytl.panelContainer = null;
   ytl.player = null;
-  ytl.slider = null;
+  //ytl.slider = null;
   ytl.sliderBar = null;
-  
+  ytl.sliderArray = [];
+  ytl.marginArray = [];
+  ytl.InfoList = {};
+  ytl.chromeId = "gflcdpghmoockmhpfadcabjkhbmjopba";
   // Event Holder
   ytl.getReadyTimes = 0;
   ytl.playAction = null;
@@ -261,16 +264,6 @@ setEventListener: function () {
   } else if (ytl.isDebug) {
     console.log('[LOOPER FOR YOUTUBE]', 'fail to find dom to observe player size change.');
   }
-  
-  //window.removeEventListener('resize', ytl.windowResizedAction, false);
-  //window.addEventListener('resize', ytl.windowResizedAction, false); 
-  /* 
-  const progress = document.getElementById("loop-slider-padding-0");
-
-  setInterval(function () {
-    progress.style.marginLeft = (Math.round((ytl.player.getCurrentTime() / ytl.player.getDuration()) * 100)).toString() + "%";
-  }, 100);
-  */
 },
 
 /*
@@ -750,10 +743,8 @@ setButton: function() {
     renderer.setAttribute('is-icon-button', '');
     renderer.setAttribute('class', 'loop-button style-scope ytd-menu-renderer force-icon-button style-default size-default');
     renderer.appendChild(ytl.updateButton());
-    //var tooltip = document.createElement('paper-tooltip');
-    //tooltip.setAttribute('class', 'style-scope ytd-toggle-button-renderer');
-    //tooltip.innerText = ytl.i18n('button_hover');
-    //renderer.appendChild(tooltip);
+    ytl.sliderArray.push(document.getElementById('icon'));
+    ytl.sliderArray.push(document.getElementById('iconranie'));
     renderer.addEventListener ('click', ytl.buttonAction);
     while (document.getElementById('loop-button')) {
       document.getElementById('loop-button').remove();
@@ -762,7 +753,6 @@ setButton: function() {
     ytl.button = document.getElementById('loop-button');
     
   } else {
-    
     var button = document.createElement('button'), 
     icon_wrapper = document.createElement('span'),
     icon = document.createElement('span'),
@@ -814,77 +804,94 @@ setButton: function() {
     
   }
 },
+
 buttonClick: function (s) { ytl.log('Button Click - Done'); if(ytl.button) return ytl.button.click(); },
 
-setInfoPanel: function () {
-  // show loop count and timer
-  var info = document.createElement('div');
-  info.className = 'loop-panel-info-container';
+setUserProgress: function(userName){
+  var startPoint = document.createElement('div');
+  startPoint.className = 'loop-slider-pointer slider-start';
+  startPoint.id = 'icon' + userName;
+  var br = document.createElement('br');
+
+  // Set dropdown menu
+  var dropdown = document.createElement('div');
+  dropdown.id = 'myDropdown' + userName;
+  dropdown.className = 'dropdown-content';
+  var dropdown_message = document.createElement('div');
+  //dropdown_message.href = "#message";
+  dropdown_message.innerText = "Message " + userName;
+  dropdown_message.className = "chat-btn";
+  var dropdown_speaker = document.createElement('a');
+  dropdown_speaker.href = "#speak";
+  dropdown_speaker.innerText = "Speak to " + userName;
+  var dropdown_note = document.createElement('a');
+  dropdown_note.href = "#notes";
+  dropdown_note.innerText = "See " + userName + "'s notes";
+
+  var chatBox = document.createElement('div');
+  chatBox.className = "chat-popup";
+  var chatClose = document.createElement('div');
+  chatClose.className = "badge";
+  chatClose.innerText = "close";
+  var chatArea = document.createElement('div');
+  chatArea.className = "chat-area";
+  var incomeMsg = document.createElement('div');
+  incomeMsg.className = "income-msg";
+  var Msg = document.createElement('span');
+  Msg.className = "msg";
+  Msg.innerText = "Hi, I'm Jim. Nice to meet you!";
+  incomeMsg.appendChild(Msg);
+  chatArea.appendChild(incomeMsg);
+  var inputArea = document.createElement('div');
+  inputArea.className = "input-area";
+  var inputText = document.createElement('input');
+  incomeMsg.type = "text";
+  //incomeMsg.id = "coming-input-text"
+  var submitButton = document.createElement('button');
+  submitButton.className = "submitMsg";
+  submitButton.innerHTML = '<i class="material-icons"> send</i>';
+  inputArea.appendChild(inputText);
+  inputArea.appendChild(submitButton);
   
-  var count = document.createElement('span');
-  var counter = document.createElement('span');
-  counter.id = 'loop-counter';
-  count.appendChild(document.createTextNode(ytl.i18n('played_times')));
-  count.appendChild(counter);
-  count.appendChild(document.createTextNode(ytl.i18n('times_played')));
-  
-  var timer = document.createElement('span');
-  var time = document.createElement('span');
-  time.id = 'loop-timerTime';
-  timer.appendChild(document.createTextNode(ytl.i18n('played_minutes')));
-  timer.appendChild(time);
-  timer.appendChild(document.createTextNode(ytl.i18n('minutes_played')));
-  
-  info.appendChild(count);
-    if (ytl.isDebug) {
-      info.appendChild(document.createTextNode(ytl.i18n('and')));
-      info.appendChild(timer);
-    }
-  return info;
+  chatBox.appendChild(chatClose);
+  chatBox.appendChild(chatArea);
+  chatBox.appendChild(inputArea);
+
+  dropdown_message.onclick = function displayChat() {
+    chatBox.classList.toggle("display");
+  }
+
+  chatClose.onclick = function closeChat() {
+    chatBox.classList.toggle("hide");
+  }
+
+  submitButton.onclick = function submitForm() {
+    let userInput = incomeMsg.value;
+
+    let temp = `<div class="out-msg">
+    <span class="my-msg">${userInput}</span>
+    </div>`;
+
+    chatArea.insertAdjacentHTML("beforeend", temp);
+    incomeMsg.value = '';
+  }
+
+  dropdown_message.appendChild(chatBox);
+  dropdown.appendChild(dropdown_message);
+  dropdown.appendChild(dropdown_speaker);
+  dropdown.appendChild(dropdown_note);
+  startPoint.appendChild(br);
+  startPoint.appendChild(br);
+  startPoint.appendChild(br);
+  startPoint.appendChild(dropdown);
+
+  startPoint.onclick = function myFunction() {
+    document.getElementById("myDropdown").classList.toggle("show");
+  }
+  return startPoint;
 },
 
-setPortionPanel: function (panel) {
-  // Set Portion Input
-  var portion = document.createElement('div');
-  portion.id = portion.className = 'loop-panel-portion-container';
-  var portionCheckboxContainer = document.createElement('span');
-  var portionCheckbox = document.createElement('tp-yt-paper-checkbox');
-  portionCheckbox.className = 'loop-portion-checkbox';
-  portionCheckbox.id = 'loop-portion-checkbox';
-  portionCheckbox.name = 'loop-portion-enable';
-  portionCheckboxContainer.appendChild(portionCheckbox);
-  var portionCheckboxElement = document.createElement('span');
-  portionCheckboxElement.className = 'yt-uix-form-input-checkbox-element';
-  portionCheckboxContainer.appendChild(portionCheckboxElement);
-  var portionCheckboxLabel1 = document.createElement('label'),
-    portionCheckboxLabel2 = document.createElement('label'),
-    portionCheckboxLabel3 = document.createElement('label'),
-    portionCheckboxLabel4 = document.createElement('label');
-  portionCheckboxLabel1.setAttribute('for', 'loop-portion-checkbox');
-  portionCheckboxLabel2.setAttribute('for', 'loop-portion-checkbox');
-  portionCheckboxLabel3.setAttribute('for', 'loop-portion-checkbox');
-  portionCheckboxLabel4.setAttribute('for', 'loop-portion-checkbox');
-  portionCheckboxLabel1.innerText = ' '+ytl.i18n('loop_in_portion_start');
-  portionCheckboxLabel2.innerText = ytl.i18n('from');
-  portionCheckboxLabel3.innerText = ytl.i18n('to');
-  portionCheckboxLabel4.innerText = ytl.i18n('loop_in_portion_end');
-  var startTime = document.createElement('input'), 
-    endTime = document.createElement('input');
-  startTime.type = endTime.type = 'text';
-  startTime.className = endTime.className = 'yt-uix-form-input-text';
-  startTime.value = endTime.value = '0';
-  startTime.title = endTime.title = ytl.i18n('double_click_to_get_current_time');
-  startTime.id = 'loop-start-time-0';
-  endTime.id = 'loop-end-time-0';
-  
-  portion.appendChild(portionCheckboxContainer);
-  portion.appendChild(portionCheckboxLabel1);
-  portion.appendChild(portionCheckboxLabel2);
-  portion.appendChild(startTime);
-  portion.appendChild(portionCheckboxLabel3);
-  portion.appendChild(endTime);
-  portion.appendChild(portionCheckboxLabel4);
-
+setMenuPanel: function (panel) {
   // Set Slider
   var slider = document.createElement('div');
   slider.id = 'loop-slider-0';
@@ -895,6 +902,7 @@ setPortionPanel: function (panel) {
   padding.title = 'Mark is currently watching at';
   var startPoint = document.createElement('div');
   startPoint.className = 'loop-slider-pointer slider-start';
+  startPoint.id = "icon";
   var br = document.createElement('br');
 
   // Set dropdown menu
@@ -941,7 +949,6 @@ setPortionPanel: function (panel) {
   chatBox.appendChild(chatArea);
   chatBox.appendChild(inputArea);
 
-
   var script = document.createElement('script');
   script.src = "https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@3.1.1/dist/index.min.js";
   
@@ -977,14 +984,21 @@ setPortionPanel: function (panel) {
   startPoint.onclick = function myFunction() {
     document.getElementById("myDropdown").classList.toggle("show");
   }
-  //
+  
+  chrome.runtime.sendMessage(ytl.chromeId, {command: "request a list of user names"}, function(response) {
+    var responseInfo = response.farewell;
+    var field = responseInfo.split('|');
+    var username = field[0];
+    var margin = field[1];
+    ytl.InfoList[username] = margin;
+    //padding.appendChild(ytl.setUserProgress(username));
+    console.log("user name: " + username + " margin: " + margin);
+    console.log("from info list // " + ytl.InfoList[username]);
+  });
 
-
-  //padding.appendChild(tooltip_start);
   padding.appendChild(startPoint);
-  //padding.appendChild(dropdown_message);
-  //padding.appendChild(tooltip_end);
-  //padding.appendChild(endPoint);
+  padding.appendChild(ytl.setUserProgress('ranie'));
+  // add new user icon here
   slider.appendChild(padding);
   
   var sliderContainer = document.createElement('div');
@@ -994,30 +1008,10 @@ setPortionPanel: function (panel) {
 
   // Add to Panel
   if (panel) {
-    //panel.appendChild(portion); 
     panel.appendChild(sliderContainer); 
   } else return false;
-
-  // Event for input start time (change, key, mouse wheel)
 },
-
-sliderDisplay: function (i) {
-  var i = i == null || i <= 0 ? 0 : i;
-  if(!ytl.slider||!ytl.sliderBar) return false;
-  var duration = ytl.getVariable('duration'),
-    starttime = ytl.getVariable('starttime', i),
-    endtime = ytl.getVariable('endtime', i);
-  ytl.sliderBar.style.marginLeft = (starttime/duration*100).toFixed(4) + '%';
-  setInterval(function () {
-    ytl.sliderBar.style.marginLeft = (Math.round((ytl.player.getCurrentTime() / ytl.player.getDuration()) * 100)).toString() + "%";
-  }, 100);
-  ytl.sliderBar.style.background = ytl.checkIf('inportion') ? '#cc181e' : '#757575' ;
-  document.getElementById('loop-portion-checkbox').checked = ytl.checkIf('inportion');
-  document.getElementById('loop-start-time-' + i).value = ytl.getTime(starttime);
-  document.getElementById('loop-end-time-' + i).value = ytl.getTime(endtime);
-  document.getElementById('loop-slider-start-time-' + i).value = ytl.getTime(starttime);
-  document.getElementById('loop-slider-end-time-' + i).value = ytl.getTime(endtime); 
-},
+// set interval for updating real-time user progress on the progress bar
 
 setPanel: function() {
   if(ytl.panel && document.getElementById('action-panel-loop')) return;
@@ -1046,7 +1040,7 @@ setPanel: function() {
       ytl.panelDisplay('isfalse');
     });
 
-  ytl.setPortionPanel(content);
+  ytl.setMenuPanel(content);
 
   if (ytl.layout == '2017') {
     panelInsert.insertBefore(content, panelInsert.firstChild);
@@ -1058,297 +1052,14 @@ setPanel: function() {
 
   ytl.panel = document.getElementById('action-panel-loop');
   ytl.slider = document.getElementById('loop-slider-0');
-  ytl.sliderBar = document.getElementById('loop-slider-padding-0');
-
-},
-
-/*
-setQuality: function (args) {
-  var setQualityCount = 0;
-  sessionStorage['loadVideoById'] = args && args.loadVideoById == true ? true : false;
-  ytl.setQualityAction = function() {
-    if (ytl.player == null) return false;
-    if (ytl.getVariable('quality') == false) return false;
-    if (ytl.isDebug) ytl.log('Quality before setQuality:', ytl.getVariable('quality'), setQualityCount);
-    clearTimeout(ytl.setQualityAction);
-    var setQualityAs = '';
-    if (ytl.getOption('quality')) {
-      setQualityAs = ytl.getOption('quality');
-      if (setQualityAs != "default") {
-        if ( ytl.qualityLevels.indexOf(ytl.getVariable('highestQuality')) > ytl.qualityLevels.indexOf(ytl.getOption('quality')) ) {
-          // Set the highest quality available
-          setQualityAs = ytl.getVariable('highestQuality');
-        } else if ( ytl.qualityLevels.indexOf(ytl.getVariable('lowestQuality')) < ytl.qualityLevels.indexOf(ytl.getOption('quality')) ) {
-          // Set the lowest quality available
-          setQualityAs = ytl.getVariable('lowestQuality');
-        }
-        if ( ytl.qualityLevels.indexOf(ytl.getVariable('quality')) < ytl.qualityLevels.indexOf(ytl.getOption('quality')) ) {
-          // Quality willing to set is worse than current quality
-          // As-of Sept-2014, YouTube unable to handle this quality change
-          // use loadVideoById as a workaround
-          sessionStorage['loadVideoById'] = true;
-        }
-      }
-    }
-    ytl.session['yt-quality-set'] = setQualityAs;
-    
-    if (setQualityAs == false) {
-      if (ytl.isDebug) ytl.log('Error: invalid quality level');
-      if (ytl.getVariable('availableQuality').indexOf(ytl.getOption('quality')) > 0) {
-        setQualityAs = ytl.getOption('quality');
-        ytl.session['yt-quality-set'] = setQualityAs;
-        let playerQuality = localStorage.getItem("yt-player-quality");
-        if (!playerQuality || playerQuality.indexOf(setQualityAs) === -1) {
-            let creation = Date.now(), expiration = creation + 2592000000;
-            localStorage.setItem("yt-player-quality", JSON.stringify({"data": setQualityAs, "expiration": expiration, "creation": creation}));
-        }
-      } else {
-        clearTimeout(ytl.setQualityAction);
-        return false;
-      }
-    } else if (setQualityAs == ytl.getVariable('quality')) {
-      // Nothing to do
-      if (ytl.isDebug) ytl.log('PlaybackQuality Done.');
-      clearTimeout(ytl.setQualityAction);
-      setQualityCount = 0;
-      return true;
-    }
-    
-    if (setQualityCount > 5) {
-      clearTimeout(ytl.setQualityAction);
-      if (ytl.isDebug) ytl.log('Stop trying to set Playback Quality');
-    } else {
-      if (typeof ytl.player.setPlaybackQualityRange === 'function') {
-        if (ytl.isDebug) ytl.log('Set Quality using setPlaybackQualityRange:', setQualityAs);
-        ytl.player.setPlaybackQualityRange([setQualityAs]);
-      } else if (typeof ytl.player.setPlaybackQuality === 'function') {
-        if (ytl.isDebug) ytl.log('Set Quality using setPlaybackQuality:', setQualityAs);
-        ytl.player.setPlaybackQuality(setQualityAs);
-      } else {
-        if (ytl.isDebug) ytl.log('Error: missing PlaybackQuality function');
-      }
-      if (typeof ytl.player.getPlayerState === 'function' && ytl.player.getPlayerState() != -1) {
-        if ( ytl.qualityLevels.indexOf(ytl.getVariable('highestQuality')) < ytl.qualityLevels.indexOf(ytl.getVariable('quality'))
-          && ytl.qualityLevels.indexOf(ytl.getVariable('lowestQuality')) > ytl.qualityLevels.indexOf(ytl.getVariable('quality'))
-          && (ytl.getOption('quality') != "default")
-          && (ytl.getOption('quality') != ytl.getVariable('quality'))
-        ) {
-          
-        } else if (ytl.getVariable('availableQuality').indexOf(setQualityAs) > 0 && setQualityAs != ytl.getVariable('quality')) {
-          // Quality willing to set is available but not set
-        } else {
-          // Success
-          if (ytl.isDebug) ytl.log('PlaybackQuality Done.');
-          clearTimeout(ytl.setQualityAction);
-          return;
-        }
-      }
-      setTimeout(ytl.setQualityAction, 1000);
-    }
-    
-    if (ytl.isDebug) ytl.log('Quality after setQuality:', ytl.getVariable('quality'));
-    setQualityCount++;
-  }
-  ytl.setQualityAction();
-},
-*/
-
-
-/*
-setPlayerSize: function(e) {
-  if (ytl.player==null) return false;
-  
-  var _body = document.getElementById('body');
-  var _page = document.getElementById('page');
-  var _container = document.getElementById('watch7-container');
-  var _player = document.getElementById('player-legacy') || document.getElementById('player');
-  var _placeholder = document.getElementById('placeholder-player');
-  
-  if (_body==null) return false;
-  if (_player==null) return false;
-  if (_container==null) return false;
-  if (ytl.getOption('playerSizeEnable') != true ) return false;
-
-  _page.className = _page.className.replace(/( )?watch-(non-)?stage-mode/g, '').replace(/( )?watch-wide/g, '');
-  _container.className = _container.className.replace(/( )?watch-wide/g, '');
-    _player.className = _player.className.replace(/( )?watch-full/g, '');
-  if (_placeholder != null) {
-    _placeholder.className = _placeholder.className.replace(/( )?watch-full/g, '');
-  }
-  
-  if (ytl.checkIf('playlist-queue')) {
-    _page.className += ' watch-non-stage-mode';
-        _player.className = _player.className.replace(/( )?watch-medium/g, '')
-    _player.className += ' watch-small';
-    if (_placeholder != null) {
-        _placeholder.className = _placeholder.className.replace(/( )?watch-medium/g, '')
-          _placeholder.className += ' watch-small';
-    }
-    document.cookie = "wide=0; path=/; domain=.youtube.com";
-    setTimeout(function(){document.body.dataset.playerSize = 'small';}, 500);
-    return;
-  }
-    
-  if (ytl.getOption('playerSize') == 'normal') {
-    _page.className += ' watch-non-stage-mode';
-    _player.className += ' watch-small';
-    if (_placeholder != null) {
-      _placeholder.className += ' watch-small';
-    }
-    document.cookie = "wide=0; path=/; domain=.youtube.com";
-    setTimeout(function(){document.body.dataset.playerSize = 'small';}, 500);
-  } else if (ytl.getOption('playerSize') == 'wide' || ytl.getOption('playerSize') == 'fullsize') {
-    _page.className += ' watch-stage-mode';
-    if (_page.className.match('watch-wide') == null)
-      _page.className += ' watch-wide';
-    if (_container.className.match('watch-wide') == null)
-      _container.className += ' watch-wide';
-    if (ytl.getOption('playerSize') == 'fullsize' && _player.className.match('watch-full') == null) {
-      _player.className = _player.className.replace(/( )?(watch-small|watch-full)/g, '');
-      _player.className += ' watch-full';
-      if (_placeholder != null) {
-        _placeholder.className = _placeholder.className.replace(/( )?(watch-small|watch-full)/g, '');
-        _placeholder.className += ' watch-full';
-      }
-    }
-    if (ytl.getOption('playerSize') == 'wide' && _player.className.match('watch-medium') == null) {
-      _player.className += ' watch-medium';
-      if (_placeholder != null) {
-        _placeholder.className += ' watch-medium';
-      }
-    }
-    document.cookie = "wide=1; path=/; domain=.youtube.com";
-    setTimeout(function(){document.body.dataset.playerSize = 'large';}, 500);
-  }
-  setTimeout(ytl.setFullWindowPlayerContent, 500);
-},
-*/
-
-/*
-setFullWindowPlayerContent: function() {
-  var _player = document.getElementById('player-legacy') || document.getElementById('player');
-  var _placeholder = document.getElementById('placeholder-player');
-  var _container = document.getElementById('watch7-container');
-    if (ytl.getOption('playerSize') == 'fullsize' && 
-        document.getElementsByTagName('html')[0].className.match('content-snap-width-skinny-mode') == null && // new responsive mobile layout
-        _player != null && _player.className.match('watch-full') != null &&
-        ytl.session['yt-player-size'] != 'normal'
-    ) {
-        // Player Size
-      if (document.getElementsByClassName('html5-video-player').length > 0) {
-        if (document.getElementsByTagName('html')[0].getAttribute('data-player-size') != 'fullscreen' || document.getElementsByClassName('ytp-fullscreen').length < 1) {
-          document.getElementsByClassName('html5-video-container')[0].style.width = document.getElementsByClassName('html5-video-player')[0].offsetWidth + 'px';
-          document.getElementsByClassName('html5-video-container')[0].style.height = document.getElementsByClassName('html5-video-player')[0].offsetHeight + 'px';
-        } else {
-            document.getElementsByClassName('html5-video-container')[0].style.width = 'initial';
-            document.getElementsByClassName('html5-video-container')[0].style.height = 'initial';
-        }
-      }
-      if (_container != null) {
-        if (_container.className.match('watch-wide') == null)
-          _container.className += ' watch-wide';
-      }
-      if (_placeholder != null) {
-          _placeholder.className = _placeholder.className.replace(/( )?(watch-small|watch-full)/g, '');
-        _placeholder.className += ' watch-full';
-      }
-        // New YouTube Control UI
-        if (document.getElementsByClassName('ytp-chrome-bottom').length > 0 && document.getElementsByClassName('html5-video-player').length > 0) {
-            if (document.getElementsByClassName('ytp-fullscreen').length < 1) {
-                document.getElementsByClassName('ytp-chrome-bottom')[0].style.left = 'initial';
-                var _left = (document.getElementsByClassName('html5-video-player')[0].offsetWidth - document.getElementsByClassName('ytp-chrome-bottom')[0].offsetWidth)/2;
-                document.getElementsByClassName('ytp-chrome-bottom')[0].style.marginLeft = (_left > 0 ? _left : 0) + 'px';
-                setTimeout(function() {
-                    var _left = (document.getElementsByClassName('html5-video-player')[0].offsetWidth - document.getElementsByClassName('ytp-chrome-bottom')[0].offsetWidth)/2;
-                    if (document.getElementsByClassName('ytp-preview').length > 0)
-                        document.getElementsByClassName('ytp-preview')[0].style.marginLeft = (_left > 0 ? _left : 0) + 'px';       
-                }, 500);
-            } else {
-                document.getElementsByClassName('ytp-chrome-bottom')[0].style.left = '12px';
-                document.getElementsByClassName('ytp-chrome-bottom')[0].style.marginLeft = 'initial';
-                if (document.getElementsByClassName('ytp-preview').length > 0)
-                document.getElementsByClassName('ytp-preview')[0].style.marginLeft = 'initial';  
-            }
-        }
-        // Annotations
-      if (document.getElementsByClassName('video-annotations').length > 0 && document.getElementsByClassName('html5-video-container').length > 0 && document.getElementsByClassName('video-stream').length > 0) {
-        if (document.getElementsByTagName('html')[0].getAttribute('data-player-size') != 'fullscreen' || document.getElementsByClassName('ytp-fullscreen').length < 1) {
-          var predictVideoHeight = ( document.getElementsByClassName('video-stream')[0].offsetWidth / parseInt(document.getElementsByClassName('video-stream')[0].style.width) ) * parseInt(document.getElementsByClassName('video-stream')[0].style.height);
-          var VideoHeight = predictVideoHeight;
-          var offsetVideoHeight = document.getElementsByClassName('video-stream')[0].offsetHeight;
-          if (offsetVideoHeight > (predictVideoHeight / 2)) {
-            document.getElementsByClassName('video-annotations')[0].style.top = ((offsetVideoHeight - predictVideoHeight) / 2) + 'px';
-          } else {
-            document.getElementsByClassName('video-annotations')[0].style.top = 'initial';
-            VideoHeight = document.getElementsByClassName('video-stream')[0].offsetHeight;
-          }
-          document.getElementsByClassName('video-annotations')[0].style.WebkitTransform = 'scale(' + (document.getElementsByClassName('video-stream')[0].offsetWidth/parseInt(document.getElementsByClassName('video-stream')[0].style.width)) + ',' + (VideoHeight/parseInt(document.getElementsByClassName('video-stream')[0].style.height)) + ')';
-                document.getElementsByClassName('video-annotations')[0].style.width = 'initial';
-                document.getElementsByClassName('video-annotations')[0].style.marginLeft = (document.getElementsByClassName('html5-video-container')[0].offsetWidth - document.getElementsByClassName('video-stream')[0].offsetWidth)/2 + 'px';
-        }
-      }
-        // Playlist
-        if (document.getElementById('watch-appbar-playlist') && document.getElementsByClassName('html5-video-container').length > 0) {
-            var _top = 360;
-            if (document.getElementsByClassName('ytp-chrome-bottom').length == 0) {
-                // Old Control UI
-                _top = 390;
-            }
-            document.getElementById('watch-appbar-playlist').style.top = (document.getElementsByClassName('html5-video-container')[0].offsetHeight-_top) + 'px';
-            var p_height = document.getElementById('watch-appbar-playlist').getElementsByClassName('main-content')[0].offsetHeight;
-            if (p_height < 360) p_height = 360;
-            document.getElementById('watch-appbar-playlist').style.setProperty('height', p_height + 'px', 'important');
-        }
-    } else {
-        // Player Size
-      if (document.getElementsByClassName('html5-video-container').length > 0) {
-        document.getElementsByClassName('html5-video-container')[0].style.width = 'initial';
-        document.getElementsByClassName('html5-video-container')[0].style.height = 'initial';
-      }
-      if (_player != null) {
-        _player.className = _player.className.replace(/( )?(watch-full)/g, '');
-      }
-      if (_container != null) {
-        _container.className = _container.className.replace(/( )?(watch-wide)/g, '');
-      }
-      if (_placeholder != null) {
-        _placeholder.className = _placeholder.className.replace(/( )?(watch-full)/g, '');
-      }
-        // New YouTube Control UI
-        if (document.getElementsByClassName('ytp-chrome-bottom').length > 0) {
-            document.getElementsByClassName('ytp-chrome-bottom')[0].style.left = '12px';
-            document.getElementsByClassName('ytp-chrome-bottom')[0].style.marginLeft = 'initial';
-            if (document.getElementsByClassName('ytp-preview').length > 0)
-            document.getElementsByClassName('ytp-preview')[0].style.marginLeft = 'initial';  
-        }
-        // Annotations
-      if (document.getElementsByClassName('video-annotations').length > 0) {
-            document.getElementsByClassName('video-annotations')[0].style.top = 'initial';
-            document.getElementsByClassName('video-annotations')[0].style.width = 'initial';
-            document.getElementsByClassName('video-annotations')[0].style.marginLeft = 'initial';
-            document.getElementsByClassName('video-annotations')[0].style.WebkitTransform = 'initial';
-      }
-        // Playlist
-        if (document.getElementById('watch-appbar-playlist')) {
-            document.getElementById('watch-appbar-playlist').style.setProperty('top', null);
-            document.getElementById('watch-appbar-playlist').style.setProperty('height', null);
-        }
-    }
+  //ytl.sliderBar = document.getElementById('icon');
 },
 
 
-windowResizedAction: function (e) {
-  if (e && e.type && e.type == 'resize') {
-    if (ytl.session['yt-player-size'] == 'normal') return false;
-    //ytl.setPlayerSize();
-    ytl.log('Window resized.');
-  }
-},
-*/
 observePlayerSize: function (mutation) {
   if (mutation && mutation.target && mutation.target.getAttribute('id') == 'page') {
         var _player = document.getElementById('player-legacy') || document.getElementById('player');
-    var _currentSize;
+        var _currentSize;
         if (mutation.target.className.match('watch-non-stage-mode') != null) {
             _currentSize = 'normal';
         } else {
@@ -1370,239 +1081,6 @@ observePlayerSize: function (mutation) {
   }
 },
 
-/*
-setAutoLoop: function () {
-  var autoLoopInterval = setInterval(function() {
-    if (ytl.player==null) return false;
-    if (!ytl.button) return false;
-    // 
-    clickButton = false;
-    if (ytl.getOption('saveStateLoop') || (ytl.checkIf('playlistExist') && ytl.checkIf('playlist-endplay'))) {
-      ytl.log('SaveStateLoop - Check');
-      if (ytl.checkIf('inloop') != ytl.checkIf('inloopPrevious')) {
-        clickButton = true;
-        if (ytl.checkIf('playlist-endplay')) {
-          ytl.session['yt-loop-playlist-endplay'] = true;
-          if (ytl.checkIf('playlist-incount')) {
-            ytl.session['yt-loop-incount'] = true;
-            ytl.session['yt-loop-count'] = ytl.getVariable('playlist-count');
-          }
-          if (ytl.checkIf('playlist-intimer')) {
-            ytl.session['yt-loop-intimer'] = true;
-            ytl.session['yt-loop-timer'] = ytl.getVariable('playlist-timer');
-          }
-        }
-      }
-    } else if (ytl.getOption('autoLoop')) {
-      ytl.log('AutoLoop - Check');
-      if (!ytl.checkIf('inloop'))
-        clickButton = true;
-    }
-    if (clickButton == true) {
-      ytl.log('Toggle Click Button Action');
-      if (typeof ytl.player.getPlayerState === 'function' && ytl.player.getPlayerState() != -1) {
-        clearInterval(autoLoopInterval);
-        ytl.session['yt-loop-autoclick'] = true;
-        ytl.buttonClick();
-      } else {
-        ytl.log('Video is not started (maybe on ads).');
-      }
-    } else {
-      clearInterval(autoLoopInterval);
-    }
-    ytl.buttonDisplay();
-  }, 500);
-},
-setUrlLoop: function () {
-  if(!ytl.button) return false;
-  if (ytl.urlChecked == false) {
-    ytl.urlChecked = true;
-    if (ytl.checkIf('url-loopCount')) {
-      ytl.log('URL - Loop '+ytl.getVariable('url-loopCount')+' times');
-      ytl.session['yt-loop-count'] = ytl.getVariable('url-loopCount');
-      if (ytl.getVariable('url-loopCount')>0) {
-        ytl.session['yt-loop-incount'] = true;
-      }
-    }
-    if (ytl.checkIf('url-loopTimer')) {
-      ytl.log('URL - Loop '+ytl.getVariable('url-loopTimer')+' minutes');
-      ytl.session['yt-loop-timer'] = ytl.getVariable('url-loopTimer');
-      if (ytl.getVariable('url-loopTimer')>0) {
-        ytl.session['yt-loop-intimer'] = true;
-      }
-    }
-    if (ytl.checkIf('url-starttime') || ytl.checkIf('url-endtime')) {
-      var duration = ytl.getVariable('duration'), t = null;
-      if(ytl.checkIf('url-starttime')) {
-        var t = ytl.getVariable('url-starttime');
-        if ( t >= 0 ) {
-          if(t>=duration) t = 0;
-          if( t<ytl.getVariable('endtime', 0) && (
-            ytl.checkIf('url-endtime') && t<ytl.getVariable('url-endtime') ||
-            !ytl.checkIf('url-endtime') )
-          ) {
-            ytl.setVariable('starttime', 0, t);
-            ytl.session['yt-loop-inportion'] = true;
-          }
-        }
-        ytl.log('URL - Loop in Portion - ST:' + ytl.getVariable('starttime', 0), ytl.session['yt-loop-portion']);
-      }
-      if(ytl.checkIf('url-endtime')) {
-        var t = ytl.getVariable('url-endtime');
-        if ( t >= 0 ) {
-          if(t>=duration) t = duration;
-          if( t>ytl.getVariable('starttime', 0) && (
-            ytl.checkIf('url-starttime') && t>ytl.getVariable('url-starttime') ||
-            !ytl.checkIf('url-starttime') )
-          ) {
-            ytl.setVariable('endtime', 0, t);
-            ytl.session['yt-loop-inportion'] = true;
-          }
-        }
-        ytl.log('URL - Loop in Portion - ET:' + ytl.getVariable('endtime', 0), ytl.session['yt-loop-portion']);
-      }
-    }
-    if( (ytl.checkIf('url-loop')||ytl.checkIf('url-loopCount')||ytl.checkIf('url-starttime')||ytl.checkIf('url-endtime')) && !ytl.checkIf('inloop') && !ytl.getOption('autoLoop') ) {
-      ytl.session['yt-loop-autoclick'] = true;
-      ytl.buttonClick();
-    }
-    ytl.loopAction();
-  }
-},
-setLoopTime: function () {
-  clearInterval(ytl.loopTimerAction);
-  ytl.loopTimerAction = setInterval( function() {
-        if (ytl.getVariable('playerstate') == 1)
-    ytl.session['yt-loop-time'] = ytl.getVariable('loopTime') + 1;
-    if (document.getElementById('loop-timerTime'))
-      document.getElementById('loop-timerTime').innerText = ytl.getVariable('loopTime');
-    if ( ytl.checkIf('inloop') && ytl.checkIf('intimer') && ytl.getVariable('loopTime') >= ytl.getVariable('loopTimer') ) {
-      if (ytl.checkIf('playlist-endplay')) {
-        ytl.player.nextVideo();
-      } else {
-        ytl.player.pauseVideo();
-        ytl.player.seekTo(ytl.getVariable('starttime', 0), false);
-      }
-      ytl.log('Looped - in timer (loopTimerAction)');
-    }
-  }, 60000); // every minute
-},
-
-loopAction: function (s) {
-  clearTimeout(ytl.playAction);
-  
-  if (s!=undefined) ytl.session['yt-loop-attached'] = true;
-  if ( ytl.getVariable('endtime', 0) == '0' || ytl.getVariable('endtime', 0) == 'false' || (ytl.getVariable('endtime', 0) == ytl.session['yt-duration'] && Number(ytl.session['yt-duration']) != ytl.getVariable('duration')) ) {
-    ytl.setVariable('endtime', 0, Math.floor(ytl.getVariable('duration')).toFixed(0));
-  }
-  if ( ytl.session['yt-duration'] == '0' || ytl.session['yt-duration'] == 'false' || Number(ytl.session['yt-duration']) != ytl.getVariable('duration') ) {
-    ytl.session['yt-duration'] = ytl.getVariable('duration');
-  }
-  if (s && s.eventPhase) s = s.eventPhase;
-  
-  if (ytl.isDebug) console.log('[LOOPER FOR YOUTUBE]', ytl.checkIf('inloop'), 'at', ytl.getVariable('currenttime'), 'playerState:', s, ytl.getVariable('playerstate'));
-  
-  if (ytl.checkIf('playlistExist') && ytl.checkIf('inloop')) {
-    if (ytl.checkIf('in-playlist-endplay') && (ytl.checkIf('intimer') || ytl.checkIf('incount'))) {
-      ytl.addPlaylistIdAutoLoop();
-    } else {
-      ytl.removePlaylistIdAutoLoop();
-    }
-  }
-
-  if ( ytl.checkIf('inloop') ) 
-  ytl.playAction = setTimeout( function() {
-    if ( ytl.getVariable('duration') == 0 ) {
-      ytl.log('Error: duration is zero');
-      return false;
-    }
-    
-    if ( ytl.checkIf('inportion') && (ytl.getVariable('playerstate') > -1 || s > -1) ) {
-      // Loop in Portion
-      if(
-        (ytl.getVariable('currenttime') >= ytl.getVariable('endtime', 0) - 0.1 && ytl.getVariable('currenttime') <= ytl.getVariable('endtime', 0) + 0.1) ||
-        (ytl.getVariable('currenttime') > ytl.getVariable('endtime', 0) - 0.1) ||
-        (ytl.getVariable('starttime', 0) > ytl.getVariable('currenttime') + 0.1)
-      ) {
-        if ( !ytl.checkIf('incount') || 
-          ( ytl.checkIf('incount') && ytl.getVariable('loopCount') > ytl.getVariable('loopCounter') ) 
-        ) {
-          if(!(ytl.getVariable('starttime', 0) >= ytl.getVariable('currenttime')))
-            ytl.session['yt-loop-th'] = ytl.getVariable('loopCounter')+1;
-          ytl.player.pauseVideo();
-          ytl.player.seekTo(ytl.getVariable('starttime', 0), true);
-          ytl.player.playVideo();
-          ytl.log('Looped - in portion');
-        } else { 
-          // Loop in count
-          if (ytl.checkIf('playlistExist') && ytl.checkIf('playlist-endplay')) {
-            // play next video in playlist
-            ytl.player.nextVideo();
-          } else {
-            ytl.player.pauseVideo();
-            ytl.player.seekTo(ytl.getVariable('starttime', 0), true);
-          }
-          ytl.log('Looped - in portion & count');
-        }
-        ytl.panelAction();
-      }
-    } else if ( ytl.checkIf('intimer') && ytl.getVariable('loopTime') >= ytl.getVariable('loopTimer') ) {
-      // Loop in timer
-      if ( ytl.getVariable('currenttime') > ytl.getVariable('starttime', 0) ) {
-        if (ytl.checkIf('playlistExist') && ytl.checkIf('playlist-endplay')) {
-          // play next video in playlist
-          ytl.player.nextVideo();
-        } else {
-          ytl.stopAutoPlay();
-          ytl.player.pauseVideo();
-          ytl.player.seekTo(ytl.getVariable('starttime', 0), false);
-        }
-        ytl.log('Looped - in timer');
-      } else {
-        ytl.session['yt-loop-intimer'] = false;
-      }
-      ytl.panelAction();
-    } else if ( ytl.getVariable('currenttime') >= ytl.getVariable('duration') - 1 && (ytl.getVariable('playerstate') > -1 || s > -1) ) { 
-      if( 
-        !ytl.checkIf('incount') || 
-        ( ytl.checkIf('incount') && ytl.getVariable('loopCount') > ytl.getVariable('loopCounter') ) 
-      ){
-        // Normal Loop
-        ytl.stopAutoPlay();
-        ytl.player.pauseVideo();
-        ytl.player.seekTo(0, true);
-        ytl.player.playVideo();
-        ytl.checkAutoPlay();
-        ytl.session['yt-loop-th'] = ytl.getVariable('loopCounter')+1;
-        ytl.log('Looped - normal');
-      } else if( ytl.checkIf('incount') && ytl.getVariable('loopCount') <= ytl.getVariable('loopCounter') ){
-        // Loop in count
-        if (ytl.checkIf('playlistExist') && ytl.checkIf('playlist-endplay')) {
-          // play next video in playlist
-          ytl.player.nextVideo();
-        } else {
-          ytl.stopAutoPlay();
-          ytl.player.pauseVideo();
-        }
-        ytl.log('Looped - in count');
-      }
-      ytl.panelAction();
-    }
-    
-    if ( s == -1 || ytl.getVariable('playerstate') == -1 ) {
-      ytl.log('playerstate -1');
-      ytl.player.seekTo(ytl.checkIf('check-usually') ? ytl.getVariable('starttime', 0) : 0, true);
-      ytl.player.playVideo();
-    }
-    if ( ytl.getVariable('currenttime') == 0 && ytl.getVariable('playerstate') == 0 ) {
-      ytl.log('currenttime 0, playerstate 0');
-      ytl.player.stopVideo();
-      ytl.player.seekTo(ytl.checkIf('check-usually') ? ytl.getVariable('starttime', 0) : 0, true);
-      ytl.player.playVideo();
-    }
-  }, 1);
-},
-*/
 setLoopEvent: function () {
   if(ytl.isDebug) console.log('[LOOPER FOR YOUTUBE]', 'Attach loop action event to the button and Request options setting.');
   try {
@@ -1612,15 +1090,6 @@ setLoopEvent: function () {
       if (ytl.player == player_reference) {
         if (ytl.isDebug) ytl.log('REFERENCE PLAYER: onYouTubePlayerReady');
       }
-      /*
-      //ytl.player.removeEventListener('onStateChange', ytl.loopAction, false);
-      if (document.getElementsByClassName('video-stream').length > 0) {
-        //document.getElementsByClassName('video-stream')[0].removeEventListener('ended', ytl.loopAction, false);
-        //document.getElementsByClassName('video-stream')[0].addEventListener('ended', ytl.loopAction, false);
-      } else {
-        //ytl.player.addEventListener('onStateChange', ytl.loopAction, false);
-      }
-      */
     } else {
       ytl.log('Cannot find REFERENCE PLAYER', '(usually cause by using other youtube extensions at the same time)');
       return;
@@ -1753,134 +1222,54 @@ buttonDisplay: function () {
 buttonAction: function (e) {
   if( e != null && e.which == 2 ) return;
   if (ytl.getOption('showPanel') == false) ytl.panelDisplay(false);
-  if ( ytl.checkIf('playlist-queue') ) {
-    // Not working with google cast at this moment.
-    ytl.button.setAttribute('title', ytl.i18n('button_hover_disabled_watchqueue'));
-    ytl.button.setAttribute('data-tooltip-text', ytl.i18n('button_hover_disabled_watchqueue'));
-  } else if (ytl.button.disabled != true) {
-    ytl.button.setAttribute('title', ytl.i18n('button_hover'));
-    ytl.button.setAttribute('data-tooltip-text', ytl.i18n('button_hover'));
+  if (ytl.panel != null && ytl.panel.className.match('hid') != null) {
+    ytl.panelDisplay(true);
+    //ytl.sliderDisplay(0);
+    /*
+    setInterval(function () {
+      ytl.sliderBar.style.marginLeft = (Math.round((ytl.player.getCurrentTime() / ytl.player.getDuration()) * 100)).toString() + "%";
+    }, 100);
+    */
+
+    setInterval(function(){
+    chrome.runtime.sendMessage(ytl.chromeId, {command: "request margin"}, function(response) {
+      var responseInfo = response.message;
+      var field = responseInfo.split('|');
+      var username = field[0];
+      var margin = field[1];
+      ytl.InfoList[username] = margin;
+      console.log(" username: " + username + " margin: " + margin);
+    })}, 100);
+
+    setInterval(function(){
+      chrome.runtime.sendMessage(ytl.chromeId, {marginInfo: ((Math.round((ytl.player.getCurrentTime() / ytl.player.getDuration()) * 100)).toString() + "%")});
+    }, 100);
+    
+    /*
+    setInterval(function () {
+      for(var i = 0; i < ytl.sliderArray.length; ++i){
+        ytl.sliderArray[i].style.marginLeft = (Math.round((ytl.player.getCurrentTime() / ytl.player.getDuration()) * 100)).toString() + "%";
+    }}, 100);
+    setInterval(function () {
+      for(var i = 0; i < ytl.sliderArray.length; ++i){
+        ytl.sliderArray[i].style.marginLeft = ytl.marginArray[i];
+    }}, 100);
+    */
+    setInterval(function () {
+      var i = 0;
+      for(var key in ytl.InfoList){
+        ytl.sliderArray[i].style.marginLeft = ytl.InfoList[key];
+        i++;
+    }}, 100);
+  } 
+  else if (ytl.panel != null && ytl.panel.className.match('hid') == null) {
+    ytl.panelDisplay(false);
   }
-  
-  if ( ytl.checkIf('inloop') == false ) {
-    // Start Loop
-    ytl.session['yt-loop'] = true;
-    ytl.storage['yt-loop'] = true;
-    ytl.session['yt-loop-th'] = 0;
-    ytl.session['yt-loop-time'] = 0;
-    ytl.session['yt-autoplay-initial'] = ytl.checkIf('autoPlay');
-    //ytl.setLoopTime();
-    //ytl.loopAction();
-    ytl.checkAutoPlay();
-    if( ytl.getOption('showPanel') && (ytl.panel!=null) ){
-      // Panel
-      //ytl.panelAction();
-      ytl.sliderDisplay(0);
-      if (ytl.session['yt-loop-autoclick'] == 'true') {
-        setTimeout(function() {
-          ytl.panelDisplay(ytl.getOption('defaultShowPanel'));
-        }, 500);
-      } else {
-        ytl.panelDisplay(true);
-      }
-    }
-    if (ytl.checkIf('check-usually')) {
-      //document.getElementsByClassName('video-stream')[0].removeEventListener('timeupdate', ytl.loopAction, false);
-      //document.getElementsByClassName('video-stream')[0].addEventListener('timeupdate', ytl.loopAction, false);
-    }
-  } else {
-    if (ytl.checkIf('inloop') && ytl.panel != null && ytl.panel.className.match('hid') != null && ytl.getOption('showPanel')) {
-      ytl.panelDisplay(true);
-    } else {
-      // Stop Loop
-      ytl.session['yt-loop'] = false;
-      ytl.storage['yt-loop'] = false;
-      ytl.checkAutoPlay();
-      if (ytl.panel != null && ytl.panel.className.match('hid') == null) {
-        ytl.panelDisplay(false);
-      }
-      ytl.replaceUrlVar('loop', null);
-      ytl.replaceUrlVar('timer', null);
-      ytl.replaceUrlVar('start', null);
-      ytl.replaceUrlVar('end', null);
-      ytl.removePlaylistIdAutoLoop();
-      if (document.getElementsByClassName('video-stream').length > 0) {
-        //document.getElementsByClassName('video-stream')[0].removeEventListener('timeupdate', ytl.loopAction, false);
-      }
-    }
-  }
-  ytl.session['yt-loop-autoclick'] = false;
-  setTimeout(ytl.buttonDisplay, 500);
 },
 
 playlistInit: null,
 
 playlistRepeat: null,
-
-/*
-playlistClear: function()
-{
-  if (!ytl.checkIf('playlistExist')) return;
-  var videoList = document.getElementById('watch-appbar-playlist').getElementsByClassName('playlist-videos-list')[0];
-  if (videoList) {
-    var node = document.importNode(videoList, true);
-    var _playing = node.getElementsByClassName('currently-playing')[0];
-    ytl.playlistInit = document.adoptNode(videoList);
-    while (node.firstChild) {
-      node.removeChild(node.firstChild);
-    }
-        node.appendChild(_playing);
-        // Place single playing video in list
-        var videoContainer = document.getElementById('watch-appbar-playlist').getElementsByClassName('playlist-videos-container')[0];
-        videoContainer.appendChild(node);
-    }
-  var _playlist_repeat = document.getElementById('watch-appbar-playlist').getElementsByClassName('toggle-loop');
-  if (_playlist_repeat.length > 0) {
-        ytl.playlistRepeat = _playlist_repeat[0].className.match('yt-uix-button-toggled') != null;
-    if (ytl.playlistRepeat == true)
-      _playlist_repeat[0].click();
-  }
-  if (document.getElementById('watch-appbar-playlist'))
-        document.getElementById('watch-appbar-playlist').style.display = 'none';
-    var playlist_holder = document.getElementsByClassName('watch-playlist');
-    if (playlist_holder.length > 0)
-        for (i = 0; i < playlist_holder.length; i++)
-            playlist_holder[i].style.display = 'none';
-},
-
-
-playlistReplace: function()
-{
-  if (ytl.checkIf('playlistExist') == false) return;
-  if (ytl.playlistInit == null) return false;
-    if (document.getElementById('watch-appbar-playlist')) {
-      document.getElementById('watch-appbar-playlist').style.display = 'block'
-    }
-    var playlist_holder = document.getElementsByClassName('watch-playlist');
-    if (playlist_holder.length > 0) {
-        for (i = 0; i < playlist_holder.length; i++) {
-            if (playlist_holder[i].id == "placeholder-playlist" &&
-                ytl.session['yt-player-size'] == "normal") {
-                playlist_holder[i].style.display = 'none'; 
-            } else {
-               playlist_holder[i].style.display = 'block'; 
-            }
-        }
-    }
-    if (ytl.playlistInit) {
-    var videoContainer = document.getElementById('watch-appbar-playlist').getElementsByClassName('playlist-videos-container')[0];
-        while (videoContainer.firstChild) {
-      videoContainer.removeChild(videoContainer.firstChild);
-    }
-    videoContainer.appendChild(ytl.playlistInit);
-    }
-  var _playlist_repeat = document.getElementById('watch-appbar-playlist').getElementsByClassName('toggle-loop');
-  if (_playlist_repeat.length > 0) {
-    if (ytl.playlistRepeat == true)
-      _playlist_repeat[0].click();
-  }
-},
-*/
 
 ytAutoPlay: function() {
   if (ytl.layout == '2017' || ytl.layout == '2016') {
@@ -1932,9 +1321,10 @@ getReady: function () {
       ytl.player != ytl.getVariable('player')
     )
       ytl.player = ytl.getVariable('player');
-  
-    if (ytl.button==null || document.getElementById('loop-button')==null) ytl.setButton(); else if (ytl.button) ytl.button.disabled = true;
+    
     if (ytl.panel==null || document.getElementById('action-panel-loop')==null) ytl.setPanel();
+    if (ytl.button==null || document.getElementById('loop-button')==null) ytl.setButton(); else if (ytl.button) ytl.button.disabled = true;
+    
   
     if (ytl.getVariable('starttime', 0) != 0) {
       ytl.setVariable('starttime', 0, 0);
@@ -2018,21 +1408,6 @@ messageAction: function(e) {
     if (e.data.key!=undefined) {
       ytl.storage['yt-loop-shortcut'] = (e.data['key'] == true) ? 'true' : 'false';
     }
-    /*
-    if (e.data.auto!=undefined) {
-      switch(e.data['auto']) {
-        case 'true':
-        case 'false':
-        case 'saveState':
-          ytl.storage['yt-auto-loop'] = e.data['auto']; 
-          break;
-        default: 
-          ytl.storage['yt-auto-loop'] = 'false'; 
-          break;
-      }
-      //ytl.setAutoLoop();
-    }
-    */
     if (e.data.button!=undefined) {
       switch(e.data['button']) {
         case 'all':
@@ -2054,65 +1429,6 @@ messageAction: function(e) {
         }
       }
     }
-    /*
-    if (e.data.panel!=undefined) {
-      ytl.storage['yt-loop-options'] = (e.data['panel'] == true) ? 'true' : 'false';
-    }
-    if (e.data.playersizeEnable!=undefined) {
-      ytl.storage['yt-player-resize'] = (e.data['playersizeEnable'] == true) ? 'true' : 'false';
-      //ytl.setPlayerSize();
-    }
-    /*
-    if (e.data.playersize!=undefined) {
-      switch(e.data['playersize']) {
-        case 'fullsize':
-        case 'wide':
-        case 'normal':
-          ytl.storage['yt-player-size'] = e.data['playersize']; 
-          break;
-                case 'wider':
-          ytl.storage['yt-player-size'] = 'wide'; 
-          break;
-        default: 
-          ytl.storage['yt-player-size'] = 'normal'; 
-          break;
-      }
-      //ytl.setPlayerSize();
-    }
-    /*
-    if (e.data.quality!=undefined) {
-      switch(e.data['quality']) {
-        case 'highres':
-        case 'hd2880':
-        case 'hd2160':
-        case 'hd1440':
-        case 'hd1080':
-        case 'hd720':
-        case 'large':
-        case 'medium':
-        case 'small':
-        case 'tiny':
-          ytl.storage['yt-quality'] = e.data['quality']; 
-          break;
-        default: 
-          ytl.storage['yt-quality'] = 'default'; 
-          break;
-      }
-      //ytl.setQuality();
-    }
-    if (e.data.show_changelog!=undefined) {
-      ytl.storage['yt-loop-show-changelog'] = (e.data['show_changelog'] == true) ? 'true' : 'false';
-    }
-    if (e.data.oldchrome!=undefined) {
-      if (document.getElementById('options-page-link'))
-        document.getElementById('options-page-link').style.display = 'none';
-      if (document.getElementById('loop-panel-tips-container'))
-        document.getElementById('loop-panel-tips-container').style.display = 'none';
-    }
-    
-  } else if (e.data.type == 'resetHidePromotion') {
-    ytl.storage['ytl-hide-information'] = false;
-    */
   } else if (e.data.type == 'loopActionDone') {
     if(ytl.isDebug) console.debug(e.data);
     //ytl.setPlayerSize();
@@ -2136,7 +1452,6 @@ ytl.initiate = function () {
     ytl.getReady();
   }
 }
-
 /*
  * monitoring document.body
  */
@@ -2174,6 +1489,7 @@ ytl.bodyObserver.observe(document.body, { attributes: true, subtree: false });
 /*
  * monitoring title
  */
+
 if (ytl.titleObserver) ytl.titleObserver.disconnect();
 ytl.titleObserver = new MutationObserver(function (mutations) {
   mutations.forEach(function (mutation) {
@@ -2190,6 +1506,8 @@ ytl.titleObserver = new MutationObserver(function (mutations) {
                 ytl.initiate();
               }
               sessionStorage['yt-video-id'] = videoId;
+              chrome.runtime.sendMessage("gflcdpghmoockmhpfadcabjkhbmjopba", {videoID: videoId});
+              alert(videoId);
             } else if (document.querySelector('ytg-app')) {
               var title = mutation.target.text;
               if (title != sessionStorage['yt-title']) {
@@ -2211,11 +1529,11 @@ ytl.titleObserver = new MutationObserver(function (mutations) {
       }
   });
 });
+
 ytl.titleObserver.observe(document.querySelector('head > title') || document.querySelector('title'), { subtree: true, characterData: true, childList: true });
 setTimeout(function() {
   ytl.initiate();
 }, 1000)
-
 });
 
 function getMessageFromChromeSync () {
@@ -2251,88 +1569,9 @@ function getMessageFromChromeSync () {
 }
 
 try {
-  /*
-  chrome.storage.onChanged.addListener(function(changes, namespace) {
-    for (key in changes) {
-      var storageChange = changes[key], option = {type: 'optionsMsg'}
-      switch(key) {
-        case 'ytAutoLoop':
-          switch(storageChange.newValue) {
-            case 'true':
-            case 'false':
-            case 'saveState':
-              option.auto = storageChange.newValue; 
-              break;
-            default: 
-              option.auto = 'false';
-              break;
-          }
-          break;
-        case 'option_button':
-          switch(storageChange.newValue) {
-            case 'all':
-            case 'icon':
-            case 'text':
-              option.button = storageChange.newValue; 
-              break;
-            default: 
-              option.button = 'all';
-              break;
-          }
-          break;
-        case 'ytShortcut':
-          option.key = storageChange.newValue=='false' ? false : true;
-          break;
-        case 'ytLoopPanel':
-          option.panel = storageChange.newValue=='false' ? false : true;
-          break;
-        case 'ytPlayerSizeEnable':
-          option.playersizeEnable = storageChange.newValue=='true' ? true : false;
-          break;
-        case 'ytPlayerSize':
-          switch(storageChange.newValue) {
-            case 'fullsize':
-            case 'wide':
-            case 'normal':
-              option.playersize = storageChange.newValue; 
-              break;
-            default: 
-              option.playersize = 'normal';
-              break;
-          }
-          break;
-        case 'ytQuality':
-          switch(storageChange.newValue) {
-            case 'default':
-            case 'highres':
-            case 'hd2880':
-            case 'hd2160':
-            case 'hd1440':
-            case 'hd1080':
-            case 'hd720':
-            case 'large':
-            case 'medium':
-            case 'small':
-            case 'tiny':
-              option.quality = storageChange.newValue; 
-              break;
-            default: 
-              option.quality = 'default';
-              break;
-          }
-          break;
-        case 'option_show_changelog':
-          option.show_changelog = storageChange.newValue=='false' ? false : true;
-          break;
-      }
-      window.postMessage(option, '*');
-    }
-  });
-  */
   getMessageFromChromeSync();
 } catch (e) {
 }
-
 
 window.addEventListener('message', function (e) {
   if (e.data.type)
@@ -2340,3 +1579,4 @@ window.addEventListener('message', function (e) {
     getMessageFromChromeSync();
   }
 }, false);
+

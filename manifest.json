@@ -20,6 +20,10 @@
 		  "background.html",
 		"persistent": false
 	},
+	"externally_connectable": {
+		"matches": ["*://*.youtube.com/*",
+		"*://youtube.com/*"]
+	},  
 	"content_security_policy": "default-src 'self'; script-src 'self' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com; img-src data: chrome-extension: http://*.gstatic.com https://*.gstatic.com https://*.facebook.com https://*.twitter.com; style-src 'self' 'unsafe-inline'; object-src 'self'",
 	"web_accessible_resources": [
 		"_locales/*", "options.html"

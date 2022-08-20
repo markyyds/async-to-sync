@@ -174,7 +174,7 @@
     height: 9px;
     position: relative;
     background-color: #2A2A2A;
-    padding-left: 6px;
+    padding-left: 0px;
     cursor: pointer;
     -webkit-user-select: none;
     user-select: none;
@@ -184,7 +184,7 @@
     z-index: 9;
     width: auto;
     height: 100%;
-    margin-left: 0;
+    margin-left: -5;
     margin-right: 0;
     right: initial;
     background-color: #777;
