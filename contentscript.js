@@ -117,10 +117,15 @@ initialiseVariables: function() {
   ytl.sliderArray = [];
   ytl.marginArray = [];
   ytl.InfoList = {};
+  ytl.sliderList = {};
+  ytl.userList = [];
   ytl.chromeId = "gflcdpghmoockmhpfadcabjkhbmjopba";
   // Event Holder
   ytl.getReadyTimes = 0;
   ytl.playAction = null;
+  ytl.displayMessage = "";
+  ytl.currentUser = "";
+  ytl.newUser = "";
   
   // Event Boolean
   ytl.autoPlayListenerAttach = false;
@@ -743,16 +748,23 @@ setButton: function() {
     renderer.setAttribute('is-icon-button', '');
     renderer.setAttribute('class', 'loop-button style-scope ytd-menu-renderer force-icon-button style-default size-default');
     renderer.appendChild(ytl.updateButton());
-    ytl.sliderArray.push(document.getElementById('icon'));
-    ytl.sliderArray.push(document.getElementById('iconranie'));
+   
+    /*
+    const iconID = "icon" + ytl.currentUser;
+    ytl.sliderArray.push(document.getElementById(iconID));
+    */
+    
     renderer.addEventListener ('click', ytl.buttonAction);
+
     while (document.getElementById('loop-button')) {
       document.getElementById('loop-button').remove();
     }
     ytl.buttonContainer.appendChild(renderer);
     ytl.button = document.getElementById('loop-button');
     
-  } else {
+  } 
+  /*
+  else {
     var button = document.createElement('button'), 
     icon_wrapper = document.createElement('span'),
     icon = document.createElement('span'),
@@ -801,8 +813,8 @@ setButton: function() {
     ytl.button = document.getElementById('loop-button');
     ytl.buttonicon = document.getElementById('loop-button-icon');
     ytl.buttoncontent = document.getElementById('loop-button-content');
-    
   }
+  */
 },
 
 buttonClick: function (s) { ytl.log('Button Click - Done'); if(ytl.button) return ytl.button.click(); },
@@ -817,66 +829,68 @@ setUserProgress: function(userName){
   var dropdown = document.createElement('div');
   dropdown.id = 'myDropdown' + userName;
   dropdown.className = 'dropdown-content';
-  var dropdown_message = document.createElement('div');
+  var dropdown_message = document.createElement('button');
   //dropdown_message.href = "#message";
   dropdown_message.innerText = "Message " + userName;
   dropdown_message.className = "chat-btn";
-  var dropdown_speaker = document.createElement('a');
+  
+  var dropdown_speaker = document.createElement('button');
   dropdown_speaker.href = "#speak";
   dropdown_speaker.innerText = "Speak to " + userName;
-  var dropdown_note = document.createElement('a');
+  var dropdown_note = document.createElement('button');
   dropdown_note.href = "#notes";
   dropdown_note.innerText = "See " + userName + "'s notes";
 
   var chatBox = document.createElement('div');
   chatBox.className = "chat-popup";
-  var chatClose = document.createElement('div');
-  chatClose.className = "badge";
-  chatClose.innerText = "close";
-  var chatArea = document.createElement('div');
-  chatArea.className = "chat-area";
-  var incomeMsg = document.createElement('div');
-  incomeMsg.className = "income-msg";
-  var Msg = document.createElement('span');
-  Msg.className = "msg";
-  Msg.innerText = "Hi, I'm Jim. Nice to meet you!";
-  incomeMsg.appendChild(Msg);
-  chatArea.appendChild(incomeMsg);
-  var inputArea = document.createElement('div');
-  inputArea.className = "input-area";
-  var inputText = document.createElement('input');
-  incomeMsg.type = "text";
-  //incomeMsg.id = "coming-input-text"
-  var submitButton = document.createElement('button');
-  submitButton.className = "submitMsg";
-  submitButton.innerHTML = '<i class="material-icons"> send</i>';
-  inputArea.appendChild(inputText);
-  inputArea.appendChild(submitButton);
-  
-  chatBox.appendChild(chatClose);
-  chatBox.appendChild(chatArea);
-  chatBox.appendChild(inputArea);
+  chatBox.id = "chat";
+  var chatTitle = document.createElement('div');
+  chatTitle.className = "chat-title";
+  chatTitle.innerText = userName;
+  var chatClose = document.createElement('button');
+  chatClose.className = "btn cancel";
+  chatClose.type = "button";
+  chatClose.innerText = "Close";
+  chatClose.style = "float: right;";
+  chatClose.onclick = function closeForm(){
+    document.getElementById("chat").style.display = "none";
+  };
+  chatTitle.appendChild(chatClose);
 
-  dropdown_message.onclick = function displayChat() {
-    chatBox.classList.toggle("display");
+  // chat display
+  var msgDisplay = document.createElement('div');
+  msgDisplay.className = "msg-display";
+  var msgContainer = document.createElement('ul');
+  msgContainer.className = "msg-container";
+  msgContainer.id = "chat-messages";
+  msgDisplay.appendChild(msgContainer);
+
+  // chat form
+  var formContainer = document.createElement('form');
+  formContainer.className = "form-container";
+  var msgInput = document.createElement('input');
+  msgInput.className = "msg-input";
+  msgInput.type = "text";
+  msgInput.id = "message-input";
+  var msgButton = document.createElement('button');
+  msgButton.className = "msg-button";
+  msgButton.innerText = "Send";
+  msgButton.id = "message-btn";
+  msgButton.onclick = ytl.sendMessage;
+  //document.getElementById("message-btn").addEventListener("click", sendMessage);
+
+  formContainer.appendChild(msgInput);
+  formContainer.appendChild(msgButton);
+
+  chatBox.appendChild(chatTitle);
+  chatBox.appendChild(br);
+  chatBox.appendChild(br);
+  chatBox.appendChild(msgDisplay);
+  chatBox.appendChild(formContainer);
+
+  dropdown_message.onclick = function myFunction() {
+    document.getElementById("chat").style.display = "block";
   }
-
-  chatClose.onclick = function closeChat() {
-    chatBox.classList.toggle("hide");
-  }
-
-  submitButton.onclick = function submitForm() {
-    let userInput = incomeMsg.value;
-
-    let temp = `<div class="out-msg">
-    <span class="my-msg">${userInput}</span>
-    </div>`;
-
-    chatArea.insertAdjacentHTML("beforeend", temp);
-    incomeMsg.value = '';
-  }
-
-  dropdown_message.appendChild(chatBox);
   dropdown.appendChild(dropdown_message);
   dropdown.appendChild(dropdown_speaker);
   dropdown.appendChild(dropdown_note);
@@ -884,11 +898,38 @@ setUserProgress: function(userName){
   startPoint.appendChild(br);
   startPoint.appendChild(br);
   startPoint.appendChild(dropdown);
+  startPoint.appendChild(chatBox);
 
   startPoint.onclick = function myFunction() {
-    document.getElementById("myDropdown").classList.toggle("show");
+    dropdown.classList.toggle("show");
   }
   return startPoint;
+},
+
+sendMessage(e) {
+  e.preventDefault();
+
+  // get values to be submitted
+  const timestamp = Date.now();
+  const messageInput = document.getElementById("message-input");
+  const message = messageInput.value;
+
+  alert("timestamp: " + timestamp);
+  alert("message: " + message);
+  // clear the input box
+  messageInput.value = "";
+
+  //auto scroll to bottom
+  document
+  .getElementById("messages")
+  .scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+
+  // create db collection and send in the data
+  chrome.runtime.sendMessage(ytl.chromeId, {userMessage: timestamp + '|' + message}, function(response){
+    ytl.displayMessage = response.display;
+    alert("reponse from background: " + response.display);
+    document.getElementById("chat-messages").innerHTML += ytl.displayMessage;
+  });
 },
 
 setMenuPanel: function (panel) {
@@ -899,112 +940,106 @@ setMenuPanel: function (panel) {
   var padding = document.createElement('div');
   padding.id = 'loop-slider-padding-0';
   padding.className = 'loop-slider-padding';
-  padding.title = 'Mark is currently watching at';
   var startPoint = document.createElement('div');
   startPoint.className = 'loop-slider-pointer slider-start';
-  startPoint.id = "icon";
   var br = document.createElement('br');
 
   // Set dropdown menu
   var dropdown = document.createElement('div');
   dropdown.id = 'myDropdown';
   dropdown.className = 'dropdown-content';
-  var dropdown_message = document.createElement('div');
-  //dropdown_message.href = "#message";
+  var dropdown_message = document.createElement('button');
   dropdown_message.innerText = "Message Mark";
   dropdown_message.className = "chat-btn";
-  var dropdown_speaker = document.createElement('a');
-  dropdown_speaker.href = "#speak";
+  dropdown_message.onclick = function openForm() {
+    document.getElementById("chat").style.display = "block";
+  }
+  var dropdown_speaker = document.createElement('button');
   dropdown_speaker.innerText = "Speak to Mark";
-  var dropdown_note = document.createElement('a');
-  dropdown_note.href = "#notes";
+  var dropdown_note = document.createElement('button');
   dropdown_note.innerText = "See Mark's notes";
 
   var chatBox = document.createElement('div');
   chatBox.className = "chat-popup";
-  var chatClose = document.createElement('div');
-  chatClose.className = "badge";
-  chatClose.innerText = "close";
-  var chatArea = document.createElement('div');
-  chatArea.className = "chat-area";
-  var incomeMsg = document.createElement('div');
-  incomeMsg.className = "income-msg";
-  var Msg = document.createElement('span');
-  Msg.className = "msg";
-  Msg.innerText = "Hi, I'm Jim. Nice to meet you!";
-  incomeMsg.appendChild(Msg);
-  chatArea.appendChild(incomeMsg);
-  var inputArea = document.createElement('div');
-  inputArea.className = "input-area";
-  var inputText = document.createElement('input');
-  incomeMsg.type = "text";
-  //incomeMsg.id = "coming-input-text"
-  var submitButton = document.createElement('button');
-  submitButton.className = "submitMsg";
-  submitButton.innerHTML = '<i class="material-icons"> send</i>';
-  inputArea.appendChild(inputText);
-  inputArea.appendChild(submitButton);
-  
-  chatBox.appendChild(chatClose);
-  chatBox.appendChild(chatArea);
-  chatBox.appendChild(inputArea);
+  chatBox.id = "chat";
+  var chatTitle = document.createElement('div');
+  chatTitle.className = "chat-title";
+  chatTitle.innerText = "Chat";
+  var chatClose = document.createElement('button');
+  chatClose.className = "btn cancel";
+  chatClose.type = "button";
+  chatClose.innerText = "Close";
+  chatClose.style = "float: right;";
+  chatClose.onclick = function closeForm(){
+    document.getElementById("chat").style.display = "none";
+  };
+  chatTitle.appendChild(chatClose);
 
-  var script = document.createElement('script');
-  script.src = "https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@3.1.1/dist/index.min.js";
-  
-  dropdown_message.onclick = function displayChat() {
-    chatBox.classList.toggle("display");
-  }
+  // chat display
+  var msgDisplay = document.createElement('div');
+  msgDisplay.className = "msg-display";
+  var msgContainer = document.createElement('ul');
+  msgContainer.className = "msg-container";
+  msgContainer.id = "chat-messages";
+  msgDisplay.appendChild(msgContainer);
 
-  chatClose.onclick = function closeChat() {
-    chatBox.classList.toggle("hide");
-  }
+  // chat form
+  var formContainer = document.createElement('form');
+  formContainer.className = "form-container";
+  var msgInput = document.createElement('input');
+  msgInput.className = "msg-input";
+  msgInput.type = "text";
+  msgInput.id = "message-input";
+  var msgButton = document.createElement('button');
+  msgButton.className = "msg-button";
+  msgButton.innerText = "Send";
+  msgButton.id = "message-btn";
+  msgButton.onclick = ytl.sendMessage;
+  //document.getElementById("message-btn").addEventListener("click", sendMessage);
 
-  submitButton.onclick = function submitForm() {
-    let userInput = incomeMsg.value;
+  formContainer.appendChild(msgInput);
+  formContainer.appendChild(msgButton);
 
-    let temp = `<div class="out-msg">
-    <span class="my-msg">${userInput}</span>
-    </div>`;
+  chatBox.appendChild(chatTitle);
+  chatBox.appendChild(br);
+  chatBox.appendChild(br);
+  chatBox.appendChild(msgDisplay);
+  chatBox.appendChild(formContainer);
 
-    chatArea.insertAdjacentHTML("beforeend", temp);
-    incomeMsg.value = '';
-  }
-
-  dropdown_message.appendChild(chatBox);
   dropdown.appendChild(dropdown_message);
   dropdown.appendChild(dropdown_speaker);
   dropdown.appendChild(dropdown_note);
+
+  /*
   startPoint.appendChild(br);
   startPoint.appendChild(br);
   startPoint.appendChild(br);
   startPoint.appendChild(dropdown);
-
+  //startPoint.appendChild(chatBox);
 
   startPoint.onclick = function myFunction() {
     document.getElementById("myDropdown").classList.toggle("show");
   }
-  
-  chrome.runtime.sendMessage(ytl.chromeId, {command: "request a list of user names"}, function(response) {
-    var responseInfo = response.farewell;
-    var field = responseInfo.split('|');
-    var username = field[0];
-    var margin = field[1];
-    ytl.InfoList[username] = margin;
-    //padding.appendChild(ytl.setUserProgress(username));
-    console.log("user name: " + username + " margin: " + margin);
-    console.log("from info list // " + ytl.InfoList[username]);
+  */
+
+  chrome.runtime.sendMessage(ytl.chromeId, {command: "getCurrentUser"}, function(response){
+    ytl.currentUser = response.currentusername;
+    //alert("username response from set: " + ytl.currentUser);
+    startPoint.title = ytl.currentUser + " is watching";
+    const iconID = "icon" + ytl.currentUser;
+    startPoint.id = iconID;
+    ytl.sliderList[ytl.currentUser] = document.getElementById(iconID);
+    ytl.sliderArray.push(document.getElementById(iconID));
   });
 
   padding.appendChild(startPoint);
-  padding.appendChild(ytl.setUserProgress('ranie'));
   // add new user icon here
   slider.appendChild(padding);
+  slider.appendChild(chatBox);
   
   var sliderContainer = document.createElement('div');
   sliderContainer.id = sliderContainer.className = 'loop-panel-slider-container';
   sliderContainer.appendChild(slider);
-  sliderContainer.appendChild(script);
 
   // Add to Panel
   if (panel) {
@@ -1039,7 +1074,9 @@ setPanel: function() {
       if (e.which==2) return;
       ytl.panelDisplay('isfalse');
     });
-
+  
+    
+  // Set menu panel here  
   ytl.setMenuPanel(content);
 
   if (ytl.layout == '2017') {
@@ -1152,53 +1189,6 @@ panelDisplay: function (display) {
   }
 },
 
-/*
-panelAction: function () {
-  if(!ytl.panel||!ytl.button) return false;
-  if (ytl.getVariable('endtime', 0) == ytl.session['yt-duration'] && Number(ytl.session['yt-duration']) != ytl.getVariable('duration')) {
-    ytl.setVariable('endtime', 0, Math.floor(ytl.getVariable('duration')).toFixed(0));
-  }
-  if ( ytl.session['yt-duration'] == '0' || ytl.session['yt-duration'] == 'false' || Number(ytl.session['yt-duration']) != ytl.getVariable('duration') ) {
-    ytl.session['yt-duration'] = ytl.getVariable('duration');
-  }
-  if ( isNaN(ytl.getVariable('endtime', 0)) ) {
-    ytl.setVariable('endtime', 0, Math.floor(ytl.getVariable('duration')).toFixed(0));
-  } else if( ytl.getVariable('duration') && (ytl.getVariable('endtime', 0) > ytl.getVariable('duration')) ) {
-    ytl.setVariable('endtime', 0, Math.floor(ytl.getVariable('duration')).toFixed(0));
-  }
-  ytl.sliderDisplay(0);
-  if (ytl.getTime(ytl.getVariable('endtime', 0)).length > 5)
-    document.getElementById('loop-start-time-0').style.width = document.getElementById('loop-end-time-0').style.width = "62px";
-  
-  if (document.getElementById('loop-counter')) document.getElementById('loop-counter').innerText = ytl.getVariable('loopCounter');
-  if (document.getElementById('loop-timerTime')) document.getElementById('loop-timerTime').innerText = ytl.getVariable('loopTime');
-  
-  if (document.getElementById('loop-count-checkbox')) document.getElementById('loop-count-checkbox').checked = ytl.checkIf('incount');
-  if (document.getElementById('loop-count')) {
-    document.getElementById('loop-count').value = ytl.getVariable('loopCount');
-    if (ytl.getVariable('loopCount') > 999)
-      document.getElementById('loop-count').style.width = "40px";
-  }
-  ytl.replaceUrlVar('loop', ytl.checkIf('incount') ? ytl.getVariable('loopCount') : (ytl.checkIf('inloop') ? '0' : null));
-  
-  if (document.getElementById('loop-timer-checkbox')) document.getElementById('loop-timer-checkbox').checked = ytl.checkIf('intimer');
-  if (document.getElementById('loop-timer'))
-    document.getElementById('loop-timer').value = ytl.getVariable('loopTimer');
-  ytl.replaceUrlVar('timer', ytl.checkIf('intimer') ? ytl.getVariable('loopTimer') : null);
-  
-  if (ytl.checkIf('playlistExist')) {
-    if(document.getElementById('loop-panel-end-container')) document.getElementById('loop-panel-end-container').style.display = 'inline-block';
-    if (ytl.checkIf('playlist-endplay')) {
-      if(document.getElementById('loop-playlist-end-play')) document.getElementById('loop-playlist-end-play').click();
-    } else {
-      if(document.getElementById('loop-playlist-end-stop')) document.getElementById('loop-playlist-end-stop').click();
-    }
-  } else { 
-    if(document.getElementById('loop-panel-end-container')) document.getElementById('loop-panel-end-container').style.display = 'none';
-  }
-},
-*/
-
 buttonDisplay: function () {
   if (!ytl.button) return false;
   // button
@@ -1220,45 +1210,47 @@ buttonDisplay: function () {
 },
 
 buttonAction: function (e) {
+  var pad = document.getElementById('loop-slider-padding-0');
   if( e != null && e.which == 2 ) return;
   if (ytl.getOption('showPanel') == false) ytl.panelDisplay(false);
   if (ytl.panel != null && ytl.panel.className.match('hid') != null) {
     ytl.panelDisplay(true);
-    //ytl.sliderDisplay(0);
-    /*
-    setInterval(function () {
-      ytl.sliderBar.style.marginLeft = (Math.round((ytl.player.getCurrentTime() / ytl.player.getDuration()) * 100)).toString() + "%";
-    }, 100);
-    */
 
+    //
     setInterval(function(){
-    chrome.runtime.sendMessage(ytl.chromeId, {command: "request margin"}, function(response) {
+    chrome.runtime.sendMessage(ytl.chromeId, {command: "request real-time margin"}, function(response) {
       var responseInfo = response.message;
       var field = responseInfo.split('|');
       var username = field[0];
       var margin = field[1];
       ytl.InfoList[username] = margin;
+      if(username != ytl.currentUser){
+        if(!ytl.userList.includes(username)){
+          ytl.userList.push(username);
+          document.getElementById('loop-slider-padding-0').appendChild(ytl.setUserProgress(username));
+          ytl.sliderList[username] = document.getElementById("icon" + username);
+        }
+      }
       console.log(" username: " + username + " margin: " + margin);
     })}, 100);
 
     setInterval(function(){
       chrome.runtime.sendMessage(ytl.chromeId, {marginInfo: ((Math.round((ytl.player.getCurrentTime() / ytl.player.getDuration()) * 100)).toString() + "%")});
     }, 100);
-    
+
     /*
-    setInterval(function () {
-      for(var i = 0; i < ytl.sliderArray.length; ++i){
-        ytl.sliderArray[i].style.marginLeft = (Math.round((ytl.player.getCurrentTime() / ytl.player.getDuration()) * 100)).toString() + "%";
-    }}, 100);
-    setInterval(function () {
-      for(var i = 0; i < ytl.sliderArray.length; ++i){
-        ytl.sliderArray[i].style.marginLeft = ytl.marginArray[i];
-    }}, 100);
-    */
     setInterval(function () {
       var i = 0;
       for(var key in ytl.InfoList){
         ytl.sliderArray[i].style.marginLeft = ytl.InfoList[key];
+        i++;
+    }}, 100);
+    */
+
+    setInterval(function () {
+      var i = 0;
+      for(var key in ytl.InfoList){
+        ytl.sliderList[key].style.marginLeft = ytl.InfoList[key];
         i++;
     }}, 100);
   } 
@@ -1294,22 +1286,6 @@ checkAutoPlay: function () {
     }
   }
 },
-
-/*
-stopAutoPlay: function() {
-  var upnextCancelButton = document.getElementsByClassName('ytp-upnext-cancel-button');
-  var upnextCloseButton = document.getElementsByClassName('ytp-upnext-close-button');
-  var mouseClickEvent = new MouseEvent('click', {
-    'view': window,
-    'bubbles': true,
-    'cancelable': false
-  });
-  if (upnextCancelButton.length > 0)
-  upnextCancelButton[0].dispatchEvent(mouseClickEvent);
-  if (upnextCloseButton.length > 0)
-  upnextCloseButton[0].dispatchEvent(mouseClickEvent);
-},
-*/
 
 getReady: function () {
   try {
@@ -1507,7 +1483,7 @@ ytl.titleObserver = new MutationObserver(function (mutations) {
               }
               sessionStorage['yt-video-id'] = videoId;
               chrome.runtime.sendMessage("gflcdpghmoockmhpfadcabjkhbmjopba", {videoID: videoId});
-              alert(videoId);
+              //alert(videoId);
             } else if (document.querySelector('ytg-app')) {
               var title = mutation.target.text;
               if (title != sessionStorage['yt-title']) {
